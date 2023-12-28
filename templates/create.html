@@ -1,0 +1,16 @@
+{{define "create"}}
+
+{{template "header"}}
+
+<main>
+    <form action="/save_post/" method="post" enctype="application/x-www-form-urlencoded">
+        <input type="text" name="title" id="title" placeholder="Add title" required><br>
+        <textarea name="full-text" id="full-text"  placeholder="Add text" required></textarea>
+        <button type="submit" class="publish-btn">Publish</button>
+    </form>
+  
+</main>
+
+{{template "footer"}}
+
+{{end}}
