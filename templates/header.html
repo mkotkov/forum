@@ -15,8 +15,10 @@
 <header>
    
     <a href="/" id="logo">Kodum</a>
-
-   
+    <form action="/logout" method="post">
+        <button type="submit">Log Out</button>
+    </form>
+     
     <div class="header-right-group-buttons">
         <a class="write-btn" href="http://localhost:8080/create/"> 
             <span    class="material-symbols-outlined">
@@ -31,7 +33,7 @@
 
         <div id="user">
             <img src="/public/user.jpeg" alt="User Photo" id="user-photo">
-            <span id="user-name">Sofia Creator</span>
+            <span id="user-name">{{.Author}}</span>
         </div>
     </div>
 

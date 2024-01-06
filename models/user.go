@@ -6,4 +6,5 @@ type User struct {
 	HashedPassword string `json:"hashed_password" db:"hashed_password"`
 	Name           string `json:"name" db:"name"`
 	Surname        string `json:"surname" db:"surname"`
+	SessionToken string
 }

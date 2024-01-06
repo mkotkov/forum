@@ -1,37 +1,55 @@
-// main.go
 package main
 
 import (
 	"context"
-	"fmt"
-	"net/http"
 	"forum/db"
 	"forum/handlers"
 	"forum/middleware"
+	"log"
+	"net/http"
 )
 
 func main() {
 	// Инициализация базы данных
-	ctx := context.Background()
-	db, err := db.InitDBConn(ctx)
+	database, err := db.InitDBConn(context.Background())
 	if err != nil {
-		fmt.Println("Failed to initialize database:", err)
-		return
+		log.Fatal(err)
 	}
-	defer db.Close()
+	defer database.Close()
 
 	// Создание репозитория с использованием экземпляра *sql.DB
-	repo := middleware.NewRepository(db)
+	repo := middleware.NewRepository(database)
+	repo.SetRepo(repo)
 
-	// Setting up routes and starting the server
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	http.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
-	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
+	// Создание маршрутизатора
+	mux := http.NewServeMux()
 
-	http.HandleFunc("/", handlers.MainPage)
-	http.HandleFunc("/create/", handlers.Create)
-	http.HandleFunc("/save_post/", func(w http.ResponseWriter, r *http.Request) {
+	// Обработка статических файлов
+	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
+	mux.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
+	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
+
+	// Главная страница
+	mux.HandleFunc("/", handlers.MainPageHandler(repo))
+
+	// Log out
+	mux.HandleFunc("/logout/", middleware.LogoutHandler)
+
+	// Создание поста
+	mux.HandleFunc("/create/", handlers.CreateHandler(repo))
+
+	// Сохранение поста
+	mux.HandleFunc("/save_post/", func(w http.ResponseWriter, r *http.Request) {
 		middleware.SavePost(w, r, repo)
 	})
-	http.ListenAndServe(":8080", nil)
+
+	// Логин
+	mux.HandleFunc("/login/", func(w http.ResponseWriter, r *http.Request) {
+		repo.HandleLogin(w, r)
+	})
+
+	// Дополнительные маршруты...
+
+	// Запуск сервера
+	http.ListenAndServe(":8080", mux)
 }

@@ -19,7 +19,7 @@ func InitDBConn(ctx context.Context) (*sql.DB, error) {
         db.Close()
         return nil, fmt.Errorf("failed to ping database: %w", err)
     }
-
+    
     db.SetMaxOpenConns(5)
     db.SetMaxIdleConns(1)
     db.SetConnMaxLifetime(24 * time.Hour)
