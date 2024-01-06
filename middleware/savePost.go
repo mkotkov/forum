@@ -7,6 +7,12 @@ import (
 
 
 func SavePost(w http.ResponseWriter, r *http.Request, repo RepositoryInterface) {
+
+    if !IsAuthenticated(repo.GetDB(), r) {
+		http.Error(w, "User not authenticated", http.StatusUnauthorized)
+		return
+	}
+
     if repo == nil {
         http.Error(w, "Repository is nil", http.StatusInternalServerError)
         return

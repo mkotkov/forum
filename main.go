@@ -1,3 +1,4 @@
+// main.go
 package main
 
 import (
@@ -7,6 +8,7 @@ import (
 	"forum/middleware"
 	"log"
 	"net/http"
+	"text/template"
 )
 
 func main() {
@@ -21,6 +23,10 @@ func main() {
 	repo := middleware.NewRepository(database)
 	repo.SetRepo(repo)
 
+	// Middleware initialization
+	authMiddleware := middleware.NewRepository(database)
+	authMiddleware.SetRepo(authMiddleware)
+
 	// Создание маршрутизатора
 	mux := http.NewServeMux()
 
@@ -30,7 +36,22 @@ func main() {
 	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
 
 	// Главная страница
-	mux.HandleFunc("/", handlers.MainPageHandler(repo))
+	mux.HandleFunc("/", middleware.AuthenticateHandler(repo, handlers.MainPageHandler(repo)))
+
+	// Стартовая страница (новый обработчик)
+	mux.HandleFunc("/start-page", func(w http.ResponseWriter, r *http.Request) {
+		tmpl, err := template.ParseFiles("./templates/header.html", "templates/footer.html", "templates/forum-card.html", "templates/start-page.html", "templates/login-form.html")
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+	
+		err = tmpl.ExecuteTemplate(w, "start-page", nil)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+	})
 
 	// Log out
 	mux.HandleFunc("/logout/", middleware.LogoutHandler)

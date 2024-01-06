@@ -11,6 +11,22 @@ import (
 
 const sessionCookieName = "session_token"
 
+
+func AuthenticateHandler(repo RepositoryInterface, next http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// Проверка аутентификации пользователя
+		if !IsAuthenticated(repo.GetDB(), r) {
+			// Пользователь не аутентифицирован, перенаправляем на страницу входа
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
+
+		// Пользователь аутентифицирован, продолжаем выполнение следующего обработчика
+		next(w, r)
+	}
+}
+
+
 func AuthenticateUser(w http.ResponseWriter, r *http.Request, user *models.User) {
 	// Сохраняем токен среди данных пользователя
 	user.SessionToken = "some_unique_session_token"

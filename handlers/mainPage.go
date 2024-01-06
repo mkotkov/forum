@@ -2,14 +2,12 @@ package handlers
 
 import (
 	"database/sql"
-	"fmt"
 	"forum/middleware"
 	"forum/models"
 	"net/http"
 	"text/template"
 )
 
-// MainPageHandler обрабатывает главную страницу
 func MainPageHandler(repo *middleware.Repository) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		tmpl, err := template.ParseFiles("templates/index.html", "templates/header.html", "templates/footer.html", "templates/forum-card.html", "templates/start-page.html", "templates/login-form.html")
@@ -19,38 +17,44 @@ func MainPageHandler(repo *middleware.Repository) http.HandlerFunc {
 		}
 
 		// Check if the user is authenticated
-		isAuth := middleware.IsAuthenticated(repo.GetDB(), r)
-
-		// Check if there are any posts in the database
-		posts, err := queryData(repo.GetDB())
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		if len(posts) > 0 || isAuth {
-			// There are posts or the user is authenticated, load the "index" page
-			fmt.Println("index ok")
-			data := struct {
-				Posts []models.Posts
-			}{
-				Posts: posts,
-			}
-			err = tmpl.ExecuteTemplate(w, "index", data)
+		if middleware.IsAuthenticated(repo.GetDB(), r) {
+			// User is authenticated, load the "index" page
+			posts, err := queryData(repo.GetDB())
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+
+			if len(posts) > 0 {
+				// There are posts, load the "index" page
+				data := struct {
+					Posts []models.Posts
+				}{
+					Posts: posts,
+				}
+				err = tmpl.ExecuteTemplate(w, "index", data)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+			} else {
+				// There are no posts, load the "start-page"
+				err = tmpl.ExecuteTemplate(w, "start-page", nil)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
 			}
 		} else {
-			fmt.Println("start-page")
 			// User is not authenticated, load the "start-page"
 			err = tmpl.ExecuteTemplate(w, "start-page", nil)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
 			}
 		}
 	}
 }
-
 
 func queryData(db *sql.DB) ([]models.Posts, error) {
 	rows, err := db.Query("SELECT * FROM `posts`")
@@ -69,8 +73,6 @@ func queryData(db *sql.DB) ([]models.Posts, error) {
 		}
 		posts = append(posts, post)
 	}
-    
+
 	return posts, nil
 }
-
-
