@@ -1,0 +1,19 @@
+{{define "rec-post"}}
+<div class="rec-created">
+    <h3>Recently created</h3>
+
+    <div class="item">
+        <div class="author-info">
+            <img src="/public/src/user.jpg" alt="User Photo" class="author-photo">
+            <div>
+                <span class="author-name">{{.MostRecentPost.Author}}</span>
+                <p class="post-date">Posted on: {{.MostRecentPost.PostDate}}</p>
+            </div>
+        </div>
+
+        <h2 class="post-title">{{.MostRecentPost.Title}}</h2>
+
+        <p class="post-text">{{.MostRecentPost.FullText}}</p>
+    </div>
+</div>
+{{end}}

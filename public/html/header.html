@@ -14,26 +14,27 @@
 <header>
    
     <a href="/" id="logo">Kodum</a>
-    <form action="/logout" method="post">
-        <button type="submit">Log Out</button>
-    </form>
+    
      
     <div class="header-right-group-buttons">
         <a class="write-btn" href="http://localhost:8080/create/"> 
             <span    class="material-symbols-outlined">
             edit_square</span>Write
         </a>
-
-        <span id="notifications">
-            <span class="material-symbols-outlined">
-            circle_notifications
-            </span>
-        </span>
-
         <div id="user">
-            <img src="/public/user.jpeg" alt="User Photo" id="user-photo">
+            <img src="/public/src/user.jpg" alt="User Photo" id="user-photo">
             <span id="user-name">{{.Author}}</span>
         </div>
+
+      
+            <a href="/logout">
+                <span id="notifications">
+                    <span class="material-symbols-outlined">
+                        logout
+                    </span>
+                </span>
+            </a>
+       
     </div>
 
   </header>

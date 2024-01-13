@@ -1,44 +1,56 @@
 package application
 
 import (
-	"forum/internal/repository"
 	"database/sql"
+	"forum/internal/repository"
 	"html/template"
 	"net/http"
+	"time"
 )
 
 func (a *App) MainPage(w http.ResponseWriter, r *http.Request) {
-	tmpl, err := template.ParseFiles(
-		"public/html/header.html", 
-		"public/html/footer.html", 
-		"public/html/forum-card.html", 
-		"public/html/index.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    tmpl, err := template.ParseFiles(
+        "public/html/header.html",
+        "public/html/footer.html",
+        "public/html/forum-card.html",
+		"public/html/rec-post.html",
+        "public/html/index.html")
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusBadRequest)
+        return
+    }
 
-	posts, err := queryData(a.repo.GetDB())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    // Fetch all posts for the main content
+    posts, err := queryData(a.repo.GetDB())
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 
-	// There are posts, load the "index" page
-	data := struct {
-		Posts []repository.Posts
-	}{
-		Posts: posts,
-	}
-	err = tmpl.ExecuteTemplate(w, "index", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    // Fetch the most recent post for the "Recently created" section
+    mostRecentPost, err := queryMostRecentPost(a.repo.GetDB())
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Include the most recent post in the data for rendering the template
+    data := struct {
+        Posts           []repository.Posts
+        MostRecentPost  *repository.Posts
+		TimeZone *time.Location
+    }{
+        Posts:          posts,
+        MostRecentPost: mostRecentPost,
+		TimeZone: time.UTC,
+    }
+
+    // Render the template
+    err = tmpl.ExecuteTemplate(w, "index", data)
+    if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
 }
 
 func queryData(db *sql.DB) ([]repository.Posts, error) {
@@ -52,7 +64,7 @@ func queryData(db *sql.DB) ([]repository.Posts, error) {
 
     for rows.Next() {
         var post repository.Posts
-        err := rows.Scan(&post.Id, &post.Author, &post.Title, &post.PostDate, &post.FullText)
+        err := rows.Scan(&post.Id, &post.Author, &post.Title, &post.PostDate, &post.FullText, &post.Slug)
         if err != nil {
             return nil, err
         }
@@ -62,3 +74,14 @@ func queryData(db *sql.DB) ([]repository.Posts, error) {
     return posts, nil
 }
 
+func queryMostRecentPost(db *sql.DB) (*repository.Posts, error) {
+    row := db.QueryRow(repository.SQLSelectMostRecentPost)
+
+    var post repository.Posts
+    err := row.Scan(&post.Id, &post.Author, &post.Title, &post.PostDate, &post.FullText, &post.Slug)
+    if err != nil {
+        return nil, err
+    }
+
+    return &post, nil
+}

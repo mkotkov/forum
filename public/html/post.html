@@ -1,0 +1,41 @@
+{{define "post"}}
+
+{{template "header"}}
+
+  <main class="post-page">
+
+    <div class="main-post">
+            
+      <div class="author-info">
+          <img src="/public/src/user.jpg" alt="User Photo" class="author-photo">
+          <div>
+            <span class="author-name">{{.Post.Author}}</span>
+            <p class="post-date">Posted on: {{.Post.PostDate}}</p>
+          </div>
+        </div>
+      
+       <h2 class="post-title">{{.Post.Title}}</h2>
+  
+      <p class="post-text">{{.Post.FullText}}</p>
+      
+    <div class="post-nav"> 
+      <button class="topic">HTML</button>
+      <span class="icon-reply"><span class="material-symbols-outlined">
+        reply
+      </span></span>
+      <span class="icon-like"><span class="material-symbols-outlined">
+        favorite
+      </span>
+      <span class="material-symbols-outlined">
+        sentiment_dissatisfied
+        </span>
+    </span>
+    </div>
+    
+  </div>
+
+  </main>
+
+{{template "footer"}}
+
+{{end}}
