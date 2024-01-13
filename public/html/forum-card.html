@@ -1,0 +1,31 @@
+{{define "forum-card"}}
+
+<div class="forum-card">
+            
+    <div class="author-info">
+        <img src="./public/user.jpeg" alt="User Photo" class="author-photo">
+        <div>
+          <span class="author-name">{{.Author}}</span>
+          <p class="post-date">Posted on: {{.PostDate}}</p>
+        </div>
+      </div>
+    
+  <a id="post-link" href="#">
+    <h2 class="post-title">{{.Title}}</h2>
+
+    <p class="post-text">{{.FullText}}</p>
+  </a>
+  
+  <div class="post-nav"> 
+    <button class="topic">HTML</button>
+    <span class="icon-reply"><span class="material-symbols-outlined">
+      reply
+    </span></span>
+    <span class="icon-like"><span class="material-symbols-outlined">
+      favorite
+    </span></span>
+  </div>
+  
+</div>
+
+{{end}}

@@ -1,76 +1,68 @@
-// main.go
 package main
 
 import (
 	"context"
-	"forum/db"
-	"forum/handlers"
-	"forum/middleware"
+	"fmt"
 	"log"
 	"net/http"
-	"text/template"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
+
+	"forum/internal/application"
+	"forum/internal/repository"
 )
 
 func main() {
-	// Инициализация базы данных
-	database, err := db.InitDBConn(context.Background())
+	ctx := context.Background()
+
+	db, err := repository.InitDBConn(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("%v failed to init DB connection", err)
 	}
-	defer database.Close()
+	defer db.Close()
 
-	// Создание репозитория с использованием экземпляра *sql.DB
-	repo := middleware.NewRepository(database)
-	repo.SetRepo(repo)
+	a := application.NewApp(ctx, db)
+	router := &RouterAdapter{a}
 
-	// Middleware initialization
-	authMiddleware := middleware.NewRepository(database)
-	authMiddleware.SetRepo(authMiddleware)
+	// Обработка всех запросов через RouterAdapter
+	http.Handle("/", router)
 
-	// Создание маршрутизатора
-	mux := http.NewServeMux()
+	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: nil}
 
-	// Обработка статических файлов
-	mux.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("static"))))
-	mux.Handle("/templates/", http.StripPrefix("/templates/", http.FileServer(http.Dir("templates"))))
-	mux.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("public"))))
-
-	// Главная страница
-	mux.HandleFunc("/", middleware.AuthenticateHandler(repo, handlers.MainPageHandler(repo)))
-
-	// Стартовая страница (новый обработчик)
-	mux.HandleFunc("/start-page", func(w http.ResponseWriter, r *http.Request) {
-		tmpl, err := template.ParseFiles("./templates/header.html", "templates/footer.html", "templates/forum-card.html", "templates/start-page.html", "templates/login-form.html")
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+	go func() {
+		fmt.Println("It is alive! Try http://localhost:8080")
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("ListenAndServe: %v", err)
 		}
-	
-		err = tmpl.ExecuteTemplate(w, "start-page", nil)
-			if err != nil {
-				http.Error(w, err.Error(), http.StatusInternalServerError)
-				return
-			}
-	})
+	}()
 
-	// Log out
-	mux.HandleFunc("/logout/", middleware.LogoutHandler)
+	// Слушаем сигналы для корректного завершения работы сервера
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
+	<-stop
 
-	// Создание поста
-	mux.HandleFunc("/create/", handlers.CreateHandler(repo))
+	fmt.Println("Shutting down the server...")
 
-	// Сохранение поста
-	mux.HandleFunc("/save_post/", func(w http.ResponseWriter, r *http.Request) {
-		middleware.SavePost(w, r, repo)
-	})
+	// Остановка сервера с таймаутом 5 секунд
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
 
-	// Логин
-	mux.HandleFunc("/login/", func(w http.ResponseWriter, r *http.Request) {
-		repo.HandleLogin(w, r)
-	})
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Fatalf("Server shutdown failed: %v", err)
+	}
 
-	// Дополнительные маршруты...
+	fmt.Println("Server stopped gracefully")
+}
 
-	// Запуск сервера
-	http.ListenAndServe(":8080", mux)
+
+// RouterAdapter адаптер для преобразования *application.App в http.Handler интерфейс
+type RouterAdapter struct {
+	app *application.App
+}
+
+// ServeHTTP реализует метод интерфейса http.Handler для RouterAdapter
+func (ra *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	ra.app.Routes(w, r)
 }

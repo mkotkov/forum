@@ -1,0 +1,57 @@
+{{define "index"}}
+{{template "header"}}
+
+  <main>
+      
+    <section class="list">
+      <h3>Today</h3>
+      {{range .Posts}}
+        {{template "forum-card" .}}
+      {{end}}
+            
+      </section>
+
+      <aside>
+       
+        <div class="rec-top">
+            <h3>Recommended topics</h3>
+            <div class="items">
+              <button class="topic">Data Science</button>
+              <button class="topic">HTML</button>
+              <button class="topic">CSS</button>
+              <button class="topic">HTML</button>
+              <button class="topic">Data Science</button>
+              <button class="topic">CSS</button>
+              <p id="see-more">See more topics</p>
+            </div>
+       
+        </div>
+
+        <div class="rec-created">
+          <h3>Recently created</h3>
+      
+          <div class="item">
+      
+            <div class="author-info">
+              <img src="public/user.jpeg" alt="User Photo" class="author-photo">
+              <div>
+                <span class="author-name">Sofia Creator</span>
+                <p class="post-date">Posted on: December 10, 2023</p>
+              </div>
+            </div>
+
+            <h2 class="post-title">Forum Post Title</h2>
+        
+            <p class="post-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+      
+          </div>
+        
+      </div>
+
+    </aside>
+  
+</main>
+
+{{template "footer"}}
+
+{{end}}
