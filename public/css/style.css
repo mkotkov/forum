@@ -73,10 +73,6 @@ span [class="material-symbols-outlined"] {
   font-size: 1.8rem;
   padding-right: 0.5rem;
 }
-#notifications {
-  margin-right: 1rem;
-  cursor: pointer;
-}
 
 .material-symbols-outlined {
   font-variation-settings:
@@ -142,6 +138,7 @@ span [class="material-symbols-outlined"] {
   border: 1px solid var(--conteiner);
   padding: 1rem 2rem;
   margin-bottom: 1.2rem;
+  box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
 }
 
 #post-link{
@@ -192,6 +189,7 @@ span [class="material-symbols-outlined"] {
 
 .post-nav{
   display: flex;
+  justify-content: end;
   align-items: center;
   margin-top: 1.4rem;
 }
@@ -492,10 +490,45 @@ button[name="submit-btn"]{
   background: none;
 }
 
-div.main-post{
-  width: 100%;
-  background-color: var(--background);
+main.post-page{
+  display: flex;
+  flex-direction: column;
+}
+
+.main-post{
+  width: 70%;
+  background-color: white;
+  box-shadow: 0px 2px 6px 2px rgba(0, 0, 0, 0.15), 0px 1px 2px 0px rgba(0, 0, 0, 0.30);
   border-radius: 0.8rem;
   border: 1px solid var(--conteiner);
   padding: 1rem 2rem;
+}
+
+#add-text-comment{
+  width: 70%;
+  background-color: var(--background);
+  border: 1px solid var(--conteiner);
+  border-radius: 0.8rem;
+  margin-top: 3rem;
+  padding: 1rem 2rem;
+}
+
+.comment-add button{
+  margin-top: 2rem;
+}
+
+.comment-list{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: calc(var(--index) * 1.5);
+  margin:  0  calc(var(--index) * 10) calc(var(--index) * 5) calc(var(--index) * 10);
+}
+
+.comment{
+  width: 70%;
+  padding-bottom: 2rem;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--conteiner);
 }

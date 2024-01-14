@@ -1,0 +1,34 @@
+{{define "comment"}}
+
+<div class="comment">
+     
+    <div class="author-info">
+        <img src="/public/src/user.jpg" alt="User Photo" class="author-photo">
+        <div>
+          <span class="author-name">{{.UserName}}</span>
+          <p class="post-date">Posted on: {{.CommentDate}}</p>
+        </div>
+    </div>
+    
+    <p class="comment-text">{{.Comment}}</p>
+    
+    <div class="post-nav"> 
+      <span class="icon">
+    
+    <span class="material-symbols-outlined">
+      reply
+    </span>
+
+    <span class="material-symbols-outlined">
+      favorite
+    </span>
+
+    <span class="material-symbols-outlined">
+      sentiment_dissatisfied
+    </span>
+
+  </span>
+    </div>
+  </div>
+
+{{end}}

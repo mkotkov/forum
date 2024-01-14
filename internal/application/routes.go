@@ -1,6 +1,7 @@
 package application
 
 import (
+	"log"
 	"net/http"
 	"strings"
 )
@@ -12,6 +13,7 @@ func (a *App) Routes(w http.ResponseWriter, r *http.Request) {
 	case strings.HasPrefix(r.URL.Path, "/post/"):
 		// Extract the slug from the URL path
 		slug := strings.TrimPrefix(r.URL.Path, "/post/")
+		log.Println("Slug:", slug)
 		// Handle the dynamic post page
 		a.authorized(func(w http.ResponseWriter, r *http.Request) {
 			a.PostPage(w, r, slug)
@@ -26,6 +28,9 @@ func (a *App) Routes(w http.ResponseWriter, r *http.Request) {
 			// Respond with an error or handle as needed for other HTTP methods
 			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
+	case strings.HasPrefix(r.URL.Path, "/save_comment/"):
+		// Handle the save comment logic here
+		a.SaveComment(w, r)
 	case r.URL.Path == "/login":
 		if r.Method == http.MethodGet {
 			a.LoginPage(w, "")
