@@ -1,6 +1,6 @@
 {{define "login-form"}}
 
-<div class="modal-target" id="modal-target">
+<div class="modal-target-login" id="modal-target-login">
     <div class="cmt">
     
         <form id="loginForm" name="loginForm" action="/login" method="post" class="mt-4">
@@ -8,18 +8,16 @@
             <input type="login" id="login-inp" name="login-inp" placeholder="Your login" autocomplete="on" required>
             <input type="password" id="password-inp" name="password-inp" placeholder="Your password" autocomplete="on" required>
             <button type="submit" name="submit-btn">Log in</button>
-            <p>Don't have an account?<a class="get-started-btn" href="/signup" id="login-form-btn"></span>Create one</a>
+            <p>Don't have an account?<a class="get-started-btn" href="#modal-target-signup" id="login-form-btn"></span>Create one</a>
             </p>
         </form>
-        
-    </div>
+        {{if . }}
+        <div>
+            {{.Message}}
+        </div>
+        {{end}}
+   </div>
     <a href="#close" class="modal-close"></a>    
 </div>
-
-{{if . }}
-<div>
-    {{.Message}}
-</div>
-{{end}}
 
 {{end}}

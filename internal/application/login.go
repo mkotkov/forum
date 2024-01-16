@@ -14,7 +14,8 @@ func (a *App) LoginPage(w http.ResponseWriter, message string) {
 		"public/html/footer.html", 
 		"public/html/forum-card.html", 
 		"public/html/start-page.html", 
-		"public/html/login-form.html")
+		"public/html/login-form.html",
+		"public/html/signup.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return

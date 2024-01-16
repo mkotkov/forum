@@ -10,10 +10,11 @@
                 <p class="post-date">Posted on: {{.MostRecentPost.PostDate}}</p>
             </div>
         </div>
-
+        <a id="post-link" href="/post/{{.MostRecentPost.Slug}}">
         <h2 class="post-title">{{.MostRecentPost.Title}}</h2>
 
         <p class="post-text">{{.MostRecentPost.FullText}}</p>
+        </a>
     </div>
 </div>
 {{end}}

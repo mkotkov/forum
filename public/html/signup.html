@@ -1,37 +1,38 @@
 {{define "signup"}}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Sign up page</title>
-</head>
-<body>
 
-<form id="loginForm" name="signUpForm" action="/signup" method="post" >
-    <label for="name">Имя</label><br>
-    <input type="text" id="name" name="name" required><br>
+<div class="modal-target-signup" id="modal-target-signup">
+    <div class="cmt">
+    
+    <form id="signUpForm" name="signUpForm" action="/signup" method="post" >
+        
+        <h3>Create an account</h3>
 
-    <label for="surname">Фамилия</label><br>
-    <input type="text" id="surname" name="surname" required><br>
+        <label for="name">Name</label><br>
+        <input type="text" id="name" name="name" required><br>
 
-    <label for="login">Логин</label><br>
-    <input type="login" id="login" name="login" required><br>
+        <label for="surname">Surname</label><br>
+        <input type="text" id="surname" name="surname" required><br>
 
-    <label for="password">Пароль</label><br>
-    <input type="password" id="password" name="password" required><br>
+        <label for="login">Login</label><br>
+        <input type="login" id="login" name="login" required><br>
 
-    <label for="password2">Повторите пароль</label><br>
-    <input type="password" id="password2" name="password2" required><br>
-    <br>
-    <button type="submit" name="submitBtn">Зарегистрироваться</button>
-</form>
+        <label for="password">Password</label><br>
+        <input type="password" id="password" name="password" required><br>
 
-{{if . }}
-<div>
-    {{.Message}}
+        <label for="password2">Requst password</label><br>
+        <input type="password" id="password2" name="password2" required><br>
+        <br>
+        <button type="submit" name="submit-btn">Sign up</button>
+            <p>Do you have an account?<a class="get-started-btn" href="#modal-target-login" id="login-form-btn"></span>Login in</a>
+    </form>
+
+    {{if . }}
+    <div>
+        {{.Message}}
+    </div>
+    {{end}}
+    </div>
+    <a href="#close" class="modal-close"></a>    
 </div>
-{{end}}
 
-</body>
-</html>
 {{end}}

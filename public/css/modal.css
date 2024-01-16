@@ -1,0 +1,116 @@
+.modal-target-login .cmt, .modal-target-signup .cmt{
+    display: flex;
+    width: 30rem;
+    height: 30rem;
+    flex-direction: column;
+    padding: 1rem 0 0 0 ;
+    z-index: 8;
+    transition: 0.5s;
+    border-radius: 1rem;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2), 0 16px 20px rgba(0,0,0,0.2);
+    text-align: center;
+    animation: scale 0.5s ease;
+  }
+  .modal-target-signup .cmt{
+    height: 48rem;
+  }
+  
+  #loginForm h3, #signUpForm h3{
+    font-size: 2.3rem;
+    font-weight: 500;
+    margin-bottom: 3rem;
+  }
+  
+  .modal-close {
+    position: relative;
+    display: block;
+  }
+  .modal-close:after {
+    content: "";
+    width: 2rem;
+    height: 2rem;
+    position: fixed;
+    z-index: 10;
+    top: 20%;
+    right: 35%;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'%3e%3cline x1='18' y1='6' x2='6' y2='18'%3e%3c/line%3e%3cline x1='6' y1='6' x2='18' y2='18'%3e%3c/line%3e%3c/svg%3e");
+  
+    background-size: cover;
+    animation: move 0.5s ease;
+  }
+  .modal-close:before {
+    content: "";
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    cursor: default;
+  }
+  
+  .modal-target-login form, .modal-target-signup form{
+    display: flex;
+    flex-direction: column;
+    color: var(--black);
+    align-items:center;
+    justify-content:center;
+    padding: calc(var(--index) * 2) calc(var(--index) * 1)   calc(var(--index) * 1) calc(var(--index) * 2);; 
+  
+  }
+  
+  #loginForm input, #signUpForm input{
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--conteiner);
+    width: 20rem;
+    text-align: center;
+  }
+  
+  #loginForm input:focus, #signUpForm input:focus{
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--primary);
+    width: 20rem;
+    text-align: center;
+  }
+  
+  button[name="submit-btn"]{
+    display: flex;
+    width: 7rem;
+    align-items: center;
+    justify-content: center;
+    border-radius: 1.8rem;
+    background-color: var(--primary);
+    color: white;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 0.6rem;
+    margin-bottom: 4rem;
+    margin-top: 1rem;
+  }
+  
+  #login-form-btn{
+    display: inline;
+    background: none;
+  }
+  
+  .modal-target-login, .modal-target-signup   {
+    display: none;
+  }
+
+  .modal-target-login:target, .modal-target-signup:target {
+    display:flex;
+    align-items:center;
+    justify-content:center;    
+    z-index: 4;
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    animation: bg 0.5s ease;
+    background: rgba(74, 7, 129, 0.692);
+  }
