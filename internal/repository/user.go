@@ -34,4 +34,3 @@ func (r *Repository) AddNewUser(ctx context.Context, name, surname, login, hashe
 
 	return nil
 }
-

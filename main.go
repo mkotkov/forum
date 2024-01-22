@@ -56,7 +56,6 @@ func main() {
 	fmt.Println("Server stopped gracefully")
 }
 
-
 // RouterAdapter адаптер для преобразования *application.App в http.Handler интерфейс
 type RouterAdapter struct {
 	app *application.App

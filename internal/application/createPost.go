@@ -2,17 +2,18 @@ package application
 
 import (
 	"fmt"
-	"forum/internal/repository"
 	"net/http"
 	"regexp"
 	"strings"
 	"text/template"
+
+	"forum/internal/repository"
 )
 
 func (a *App) Create(w http.ResponseWriter, r *http.Request) {
 	tmpl, err := template.ParseFiles(
-		"public/html/create.html", 
-		"public/html/header.html", 
+		"public/html/create.html",
+		"public/html/header.html",
 		"public/html/footer.html")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -46,7 +47,6 @@ func (a *App) SavePost(w http.ResponseWriter, r *http.Request) {
 
 	slug := generateSlug(title)
 
-
 	// Insert the post data into the database using the authorized user's information
 	err = a.InsertData(title, fullText, authorizedUser.Login, slug)
 	if err != nil {
@@ -59,11 +59,11 @@ func (a *App) SavePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func (a *App) InsertData(title, fullText, authorName, slug string) error {
-    // Retrieve the user information based on the author's name
-    user, err := a.repo.GetUserByName(a.ctx, authorName)
-    if err != nil {
-        return fmt.Errorf("failed to retrieve user: %w", err)
-    }
+	// Retrieve the user information based on the author's name
+	user, err := a.repo.GetUserByName(a.ctx, authorName)
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
 
 	tx, err := a.db.Begin()
 	if err != nil {
@@ -84,41 +84,40 @@ func (a *App) InsertData(title, fullText, authorName, slug string) error {
 		}
 	}()
 
-	
 	stmt, err := tx.Prepare("INSERT INTO posts (title, full_text, author, post_date, slug) VALUES (?, ?, ?, CURRENT_TIMESTAMP,?)")
-    if err != nil {
-        return fmt.Errorf("failed to prepare statement: %w", err)
-    }
-    defer stmt.Close()
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
 
-    _, err = stmt.Exec(title, fullText, user.Login, slug)
-    if err != nil {
-        return fmt.Errorf("failed to execute statement: %w", err)
-    }
+	_, err = stmt.Exec(title, fullText, user.Login, slug)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %w", err)
+	}
 
-    fmt.Println("Insertion successful")
-    return nil
+	fmt.Println("Insertion successful")
+	return nil
 }
 
 func generateSlug(s string) string {
-    // Convert to lowercase
-    s = strings.ToLower(s)
+	// Convert to lowercase
+	s = strings.ToLower(s)
 
-    // Replace spaces with hyphens
-    s = strings.ReplaceAll(s, " ", "-")
+	// Replace spaces with hyphens
+	s = strings.ReplaceAll(s, " ", "-")
 
-    // Remove special characters and symbols
-    reg, err := regexp.Compile("[^a-z0-9-]+")
-    if err != nil {
-        // handle error
-        return ""
-    }
-    s = reg.ReplaceAllString(s, "")
+	// Remove special characters and symbols
+	reg, err := regexp.Compile("[^a-z0-9-]+")
+	if err != nil {
+		// handle error
+		return ""
+	}
+	s = reg.ReplaceAllString(s, "")
 
-    // Truncate if needed
-    if len(s) > 50 {
-        s = s[:50]
-    }
+	// Truncate if needed
+	if len(s) > 50 {
+		s = s[:50]
+	}
 
-    return s
+	return s
 }

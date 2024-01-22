@@ -7,11 +7,11 @@ import (
 )
 
 type Comments struct {
-	ID         *uint16
-	PostID     uint16
-	UserID     int
-	UserName   string
-	Comment    string
+	ID          *uint16
+	PostID      uint16
+	UserID      int
+	UserName    string
+	Comment     string
 	CommentDate string
 }
 

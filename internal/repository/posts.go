@@ -7,17 +7,21 @@ import (
 )
 
 type Posts struct {
-    Id       uint16
-    Author   string
-	PostDate string
-	Title    string
-    FullText string
-	Slug string
+	Id            uint16
+	Author        string
+	PostDate      string
+	Title         string
+	FullText      string
+	Slug          string
+	LikeCount     int
+	DislikeCount  int
+	ReactionCount int
 }
 
-const SQLSelectAllPosts = "SELECT * FROM posts ORDER BY post_date DESC"
-const SQLSelectMostRecentPost = "SELECT * FROM posts ORDER BY post_date DESC LIMIT 1"
-
+const (
+	SQLSelectAllPosts       = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count, reactions_count FROM posts ORDER BY post_date DESC"
+	SQLSelectMostRecentPost = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count, reactions_count FROM posts ORDER BY post_date DESC LIMIT 1"
+)
 
 func (r *Repository) GetUserByName(ctx context.Context, login string) (u User, err error) {
 	row := r.db.QueryRowContext(ctx, `SELECT id, login, name, surname FROM users WHERE login = $1`, login)

@@ -45,6 +45,21 @@ func (a *App) Routes(w http.ResponseWriter, r *http.Request) {
 		} else if r.Method == http.MethodPost {
 			a.Signup(w, r)
 		}
+		// в switch в функции Routes
+	case strings.HasPrefix(r.URL.Path, "/like_post/"):
+		// Извлекаем slug из URL
+		slug := strings.TrimPrefix(r.URL.Path, "/like_post/")
+		a.authorized(func(w http.ResponseWriter, r *http.Request) {
+			a.ReactPost(w, r, slug, "like")
+		}).ServeHTTP(w, r)
+
+	case strings.HasPrefix(r.URL.Path, "/dislike_post/"):
+		// Извлекаем slug из URL
+		slug := strings.TrimPrefix(r.URL.Path, "/dislike_post/")
+		a.authorized(func(w http.ResponseWriter, r *http.Request) {
+			a.ReactPost(w, r, slug, "dislike")
+		}).ServeHTTP(w, r)
+
 	default:
 		// Перенаправление запросов для статических файлов в http.FileServer
 		http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))).ServeHTTP(w, r)

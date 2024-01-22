@@ -15,20 +15,21 @@
     <div class="post-nav"> 
       <span class="icon">
     
-    <span class="material-symbols-outlined">
-      reply
-    </span>
+        <span class="material-symbols-outlined">
+          reply
+        </span>
 
-    <span class="material-symbols-outlined">
-      favorite
-    </span>
+        <a href="/like_comment/{{.ID}}" class="material-symbols-outlined">
+          favorite
+        </a>
+        <span id="like-count-{{.ID}}"></span>
 
-    <span class="material-symbols-outlined">
-      sentiment_dissatisfied
-    </span>
-
-  </span>
+        <a href="/dislike_comment/{{.ID}}" class="material-symbols-outlined">
+          sentiment_dissatisfied
+        </a>
+        <span id="dislike-count-{{.ID}}"></span>
+      </span>
     </div>
-  </div>
+</div>
 
 {{end}}

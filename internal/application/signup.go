@@ -11,10 +11,10 @@ import (
 
 func (a *App) SignupPage(w http.ResponseWriter, message string) {
 	tmpl, err := template.ParseFiles(
-		"public/html/header.html", 
-		"public/html/footer.html", 
-		"public/html/forum-card.html", 
-		"public/html/start-page.html", 
+		"public/html/header.html",
+		"public/html/footer.html",
+		"public/html/forum-card.html",
+		"public/html/start-page.html",
 		"public/html/login-form.html",
 		"public/html/signup.html")
 	if err != nil {

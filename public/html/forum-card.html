@@ -16,27 +16,22 @@
     <p class="post-text">{{.FullText}}</p>
   </a>
   
-  <div class="post-nav"> 
+  <div class="post-nav">
     <button class="topic">HTML</button>
-    
+
     <span class="icon">
-      
-      <span class="material-symbols-outlined">
-        reply
-      </span>
+        <a href="/like_post/{{.Slug}}" class="material-symbols-outlined">
+            favorite
+        </a>
+        <span id="like-count-{{.Slug}}">{{.LikeCount}}</span>
 
-      <span class="material-symbols-outlined">
-        favorite
-      </span>
-
-      <span class="material-symbols-outlined">
-        sentiment_dissatisfied
-      </span>
-
+        <a href="/dislike_post/{{.Slug}}" class="material-symbols-outlined">
+            sentiment_dissatisfied
+        </a>
+        <span id="dislike-count-{{.Slug}}">{{.DislikeCount}}</span>
     </span>
-
-  </div>
-  
 </div>
+</div>
+
 
 {{end}}

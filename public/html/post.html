@@ -18,18 +18,20 @@
   
       <p class="post-text">{{.Post.FullText}}</p>
       
-    <div class="post-nav"> 
-      <button class="topic">HTML</button>
-      <span class="icon-reply"><span class="material-symbols-outlined">
-        reply
-      </span></span>
-      <span class="icon-like"><span class="material-symbols-outlined">
-        favorite
-      </span>
-      <span class="material-symbols-outlined">
-        sentiment_dissatisfied
+      <div class="post-nav">
+        <button class="topic">HTML</button>
+    
+        <span class="icon">
+            <a href="/like_post/{{.Post.Slug}}" class="material-symbols-outlined">
+                favorite
+            </a>
+            <span id="like-count-{{.Post.Slug}}">{{.Post.LikeCount}}</span>
+    
+            <a href="/dislike_post/{{.Post.Slug}}" class="material-symbols-outlined">
+                sentiment_dissatisfied
+            </a>
+            <span id="dislike-count-{{.Post.Slug}}">{{.Post.DislikeCount}}</span>
         </span>
-    </span>
     </div>
     
     </div>

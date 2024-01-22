@@ -10,10 +10,10 @@ import (
 
 func (a *App) LoginPage(w http.ResponseWriter, message string) {
 	tmpl, err := template.ParseFiles(
-		"public/html/header.html", 
-		"public/html/footer.html", 
-		"public/html/forum-card.html", 
-		"public/html/start-page.html", 
+		"public/html/header.html",
+		"public/html/footer.html",
+		"public/html/forum-card.html",
+		"public/html/start-page.html",
 		"public/html/login-form.html",
 		"public/html/signup.html")
 	if err != nil {
@@ -72,7 +72,8 @@ func (a *App) Logout(w http.ResponseWriter, r *http.Request) {
 	for _, v := range r.Cookies() {
 		c := http.Cookie{
 			Name:   v.Name,
-			MaxAge: -1}
+			MaxAge: -1,
+		}
 		http.SetCookie(w, &c)
 	}
 	http.Redirect(w, r, "/", http.StatusSeeOther)
