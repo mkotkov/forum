@@ -40,7 +40,7 @@ func (a *App) ReactPost(w http.ResponseWriter, r *http.Request, slug string, rea
 		return
 	}
 
-	http.Redirect(w, r, "/post/"+slug, http.StatusSeeOther)
+	http.Redirect(w, r, r.Referer(), http.StatusSeeOther)
 }
 
 
