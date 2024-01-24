@@ -59,6 +59,17 @@ func (a *App) Routes(w http.ResponseWriter, r *http.Request) {
 		a.authorized(func(w http.ResponseWriter, r *http.Request) {
 			a.ReactPost(w, r, slug, "dislike")
 		}).ServeHTTP(w, r)
+	case strings.HasPrefix(r.URL.Path, "/like_comment/"):
+		commentID := strings.TrimPrefix(r.URL.Path, "/like_comment/")
+		a.authorized(func(w http.ResponseWriter, r *http.Request) {
+			a.LikeComment(w, r, commentID)
+		}).ServeHTTP(w, r)
+	
+	case strings.HasPrefix(r.URL.Path, "/dislike_comment/"):
+		commentID := strings.TrimPrefix(r.URL.Path, "/dislike_comment/")
+		a.authorized(func(w http.ResponseWriter, r *http.Request) {
+			a.DislikeComment(w, r, commentID)
+		}).ServeHTTP(w, r)
 
 	default:
 		// Перенаправление запросов для статических файлов в http.FileServer

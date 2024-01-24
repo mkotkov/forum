@@ -65,7 +65,7 @@ func queryData(db *sql.DB) ([]repository.Posts, error) {
 
 	for rows.Next() {
 		var post repository.Posts
-		err := rows.Scan(&post.Id, &post.Author, &post.PostDate, &post.Title, &post.FullText, &post.Slug, &post.LikeCount, &post.DislikeCount, &post.ReactionCount)
+		err := rows.Scan(&post.Id, &post.Author, &post.PostDate, &post.Title, &post.FullText, &post.Slug, &post.LikeCount, &post.DislikeCount)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func queryMostRecentPost(db *sql.DB) (*repository.Posts, error) {
 	row := db.QueryRow(repository.SQLSelectMostRecentPost)
 
 	var post repository.Posts
-	err := row.Scan(&post.Id, &post.Author, &post.PostDate, &post.Title, &post.FullText, &post.Slug, &post.LikeCount, &post.DislikeCount, &post.ReactionCount)
+	err := row.Scan(&post.Id, &post.Author, &post.PostDate, &post.Title, &post.FullText, &post.Slug, &post.LikeCount, &post.DislikeCount)
 	if err != nil {
 		return nil, err
 	}

@@ -123,3 +123,69 @@ func (r *Repository) GetPostDislikes(ctx context.Context, postID int) (int, erro
 	}
 	return dislikeCount, nil
 }
+
+
+
+func (r *Repository) LikeComment(ctx context.Context, commentID, userID int) error {
+    _, err := r.db.ExecContext(ctx, `
+        INSERT INTO reaction (user_id, comment_id, reaction_type)
+        VALUES ($1, $2, 'like')
+        ON CONFLICT (user_id, comment_id, reaction_type) DO UPDATE SET reaction_type = 'like', created_at = CURRENT_TIMESTAMP
+    `, userID, commentID)
+    if err != nil {
+        return fmt.Errorf("failed to dislike comment: %w", err)
+    }
+    
+    // Обновление счетчика дизлайков для комментария
+    err = r.UpdateCommentReactionsCount(ctx, commentID)
+    if err != nil {
+        return fmt.Errorf("failed to update comment reactions count: %w", err)
+    }
+    
+    return nil
+}
+
+
+func (r *Repository) DislikeComment(ctx context.Context, commentID, userID int) error {
+    _, err := r.db.ExecContext(ctx, `
+        INSERT INTO reaction (user_id, comment_id, reaction_type)
+        VALUES ($1, $2, 'dislike')
+        ON CONFLICT (user_id, comment_id, reaction_type) DO UPDATE SET reaction_type = 'dislike', created_at = CURRENT_TIMESTAMP
+    `, userID, commentID)
+    if err != nil {
+        return fmt.Errorf("failed to dislike comment: %w", err)
+    }
+    
+    // Обновление счетчика дизлайков для комментария
+    err = r.UpdateCommentReactionsCount(ctx, commentID)
+    if err != nil {
+        return fmt.Errorf("failed to update comment reactions count: %w", err)
+    }
+    
+    return nil
+}
+
+func (r *Repository) UpdateCommentReactionsCount(ctx context.Context, commentID int) error {
+    _, err := r.db.ExecContext(ctx, `
+        UPDATE comments
+        SET like_count = (SELECT COUNT(*) FROM reaction WHERE comment_id = $1 AND reaction_type = 'like'),
+            dislike_count = (SELECT COUNT(*) FROM reaction WHERE comment_id = $1 AND reaction_type = 'dislike')
+        WHERE id = $1
+    `, commentID)
+    if err != nil {
+        return fmt.Errorf("failed to update comment reactions count: %w", err)
+    }
+
+    return nil
+}
+
+func (r *Repository) DeleteReactionComment(ctx context.Context, commentID, userID int) error {
+	_, err := r.db.ExecContext(ctx, `
+        DELETE FROM reaction
+        WHERE user_id = $1 AND comment_id = $2
+    `, userID, commentID)
+	if err != nil {
+		return fmt.Errorf("failed to delete reaction: %w", err)
+	}
+	return nil
+}

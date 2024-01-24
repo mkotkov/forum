@@ -15,12 +15,11 @@ type Posts struct {
 	Slug          string
 	LikeCount     int
 	DislikeCount  int
-	ReactionCount int
 }
 
 const (
-	SQLSelectAllPosts       = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count, reactions_count FROM posts ORDER BY post_date DESC"
-	SQLSelectMostRecentPost = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count, reactions_count FROM posts ORDER BY post_date DESC LIMIT 1"
+	SQLSelectAllPosts       = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count FROM posts ORDER BY post_date DESC"
+	SQLSelectMostRecentPost = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count FROM posts ORDER BY post_date DESC LIMIT 1"
 )
 
 func (r *Repository) GetUserByName(ctx context.Context, login string) (u User, err error) {
