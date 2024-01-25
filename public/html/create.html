@@ -2,10 +2,21 @@
 
 {{template "header"}}
 
+
 <main>
+
     <form action="/save_post/" method="post" enctype="application/x-www-form-urlencoded">
         <input type="text" name="title" id="title" placeholder="Add title" required><br>
         <textarea name="full-text" id="full-text"  placeholder="Add text" required></textarea>
+
+        <label for="topic">Choose a topic:</label>
+
+        <select name="topic" id="topic" required>
+            {{range .Topics}}
+                <option value="{{.ID}}">{{.Name}}</option>
+            {{end}}
+        </select>
+    
         <button type="submit" class="publish-btn">Publish</button>
     </form>
 </main>

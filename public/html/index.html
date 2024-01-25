@@ -16,13 +16,9 @@
         <div class="rec-top">
             <h3>Recommended topics</h3>
             <div class="items">
-              <button class="topic">Data Science</button>
-              <button class="topic">HTML</button>
-              <button class="topic">CSS</button>
-              <button class="topic">HTML</button>
-              <button class="topic">Data Science</button>
-              <button class="topic">CSS</button>
-              <p id="see-more">See more topics</p>
+              {{range .Topics}}
+                <button class="topic">{{.Name}}</button> 
+              {{end}}
           </div>
         </div>
 

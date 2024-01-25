@@ -17,6 +17,18 @@ func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
 		return
 	}
 
+	// Добавим вывод для проверки
+	fmt.Printf("Post: %+v\n", post)
+
+	// Проверяем, что TopicID не равен 0
+	if post.TopicID != 0 {
+		// Получаем имя темы для поста
+		post.Topic = getTopicName(a.repo.GetDB(), post.TopicID)
+	} else {
+		// Если TopicID равен 0, устанавливаем значение по умолчанию
+		post.Topic = "No Topic"
+	}
+
 	_, err = a.getAuthenticatedUser(r)
 	if err != nil {
 		http.Error(w, "User not authenticated", http.StatusUnauthorized)
@@ -44,9 +56,7 @@ func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
 		return
 	}
 
-	// Добавим вывод для проверки
-	fmt.Println("Post:", post)
-	fmt.Println("Comments:", comments)
+	
 
 	tmpl, err := template.ParseFiles(
 		"public/html/header.html",
@@ -59,12 +69,24 @@ func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
 		return
 	}
 
+	topics, err := a.repo.GetAllTopics(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Добавим вывод для проверки
+	fmt.Println("Post:", post)
+	fmt.Println("Comments:", comments)
+
 	data := struct {
 		Post     repository.Posts
 		Comments []repository.Comments
+		Topics   []repository.Topic
 	}{
 		Post:     post,
 		Comments: comments,
+		Topics:   topics,
 	}
 
 	err = tmpl.ExecuteTemplate(w, "post", data)
@@ -73,6 +95,7 @@ func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
 		return
 	}
 }
+
 
 func (a *App) SaveComment(w http.ResponseWriter, r *http.Request) {
 	// Извлекаем slug из URL
@@ -128,3 +151,5 @@ func (a *App) getAuthenticatedUser(r *http.Request) (repository.User, error) {
 
 	return user, nil
 }
+
+
