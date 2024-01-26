@@ -28,12 +28,13 @@ type Topic struct {
 
 
 const (
-    SQLSelectAllPosts = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count, COALESCE(topic_id, -1) FROM posts ORDER BY post_date DESC"
+    SQLSelectAllPosts = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count, COALESCE(topic_id, -1) FROM posts"
 
     SQLSelectMostRecentPost = "SELECT id, author, post_date, title, full_text, slug, like_count, dislike_count, COALESCE(topic_id, -1) FROM posts ORDER BY post_date DESC LIMIT 1"
 
 	SQLSelectAllTopics = "SELECT id, name FROM topics ORDER BY name"
 )
+
 
 
 func (r *Repository) GetUserByName(ctx context.Context, login string) (u User, err error) {

@@ -62,7 +62,7 @@ func (a *App) SavePost(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    slug := generateSlug(title) + topicID 
+    slug := generateSlug(title) + topicID + token
 
     // Insert the post data into the database using the authorized user's information and the selected topic
     err = a.InsertData(title, fullText, authorizedUser.Login, slug, topicID)

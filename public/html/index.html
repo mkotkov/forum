@@ -4,10 +4,27 @@
   <main>
       
     <section class="list">
-      <h3>Today</h3>
-      {{range .Posts}}
-        {{template "forum-card" .}}
-      {{end}}
+         <form action="/" method="get">
+        <select name="filters" id="filters" required onchange="this.form.submit()">
+          <option value="most_recent" {{if eq .Filter "most_recent"}}selected{{end}}>Most recent</option>
+          <option value="oldest" {{if eq .Filter "oldest"}}selected{{end}}>Oldest</option>
+          <option value="most_likes" {{if eq .Filter "most_likes"}}selected{{end}}>Most likes</option>
+          <option value="most_dislikes" {{if eq .Filter "most_dislikes"}}selected{{end}}>Most dislikes</option>
+      </select>
+      </form>
+      
+    {{if .Posts}}
+        {{range .Posts}}
+            {{template "forum-card" .}}
+        {{end}}
+    {{else}}
+        {{if .SelectedTopic}}
+            <p>No posts found with the specified topic.</p>
+        {{else}}
+            <p>No posts found.</p>
+        {{end}}
+    {{end}}
+
             
     </section>
 
@@ -16,10 +33,13 @@
         <div class="rec-top">
             <h3>Recommended topics</h3>
             <div class="items">
-              {{range .Topics}}
-                <button class="topic">{{.Name}}</button> 
-              {{end}}
-          </div>
+              <form action="/" method="get">
+                <button class="topic" name="topic" value="0" {{if eq .SelectedTopic 0}}selected{{end}}>All</button> 
+                {{range .Topics}}
+                    <button class="topic" name="topic" value="{{.ID}}" {{if eq .ID $.SelectedTopic}}selected{{end}}>{{.Name}}</button> 
+                {{end}}
+            </form>                        
+            </div>          
         </div>
 
         {{template "rec-post" .}}

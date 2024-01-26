@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
+	"strconv"
 	"time"
 
 	"forum/internal/repository"
@@ -24,43 +25,59 @@ func (a *App) MainPage(w http.ResponseWriter, r *http.Request) {
         return
     }
 
-    // Fetch all posts for the main content
-    posts, err := queryData(a.repo.GetDB())
+    filter := r.FormValue("filters")
+    topicFilter := r.FormValue("topic")
+    selectedTopic, err := strconv.Atoi(topicFilter)
+    if err != nil {
+        selectedTopic = -1
+    }
+
+    var posts []repository.Posts
+
+    // Переписываем часть кода для корректного отображения всех постов при отсутствии выбранного топика
+    if selectedTopic == 0 {
+        posts, err = queryData(a.repo.GetDB(), filter, -1)
+    } else {
+        posts, err = queryData(a.repo.GetDB(), filter, selectedTopic)
+    }
+
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
-    // Fetch the most recent post for the "Recently created" section
     mostRecentPost, err := queryMostRecentPost(a.repo.GetDB())
     if err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
-    // Fetch all topics
-	topics, err := a.repo.GetAllTopics(r.Context())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	
-	// Include the most recent post and topics in the data for rendering the template
-	data := struct {
-		Posts          []repository.Posts
-		MostRecentPost *repository.Posts
-		Topics         []repository.Topic
-		TimeZone       *time.Location
-	}{
-		Posts:          posts,
-		MostRecentPost: mostRecentPost,
-		Topics:         topics,  // Убедитесь, что это поле заполнено
-		TimeZone:       time.UTC,
-	}
-
-    // Render the template
-    err = tmpl.ExecuteTemplate(w, "index", data)
+    topics, err := a.repo.GetAllTopics(r.Context())
     if err != nil {
+        http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    // Печатаем в консоль информацию о загруженных постах для отладки
+    fmt.Printf("Loaded Posts: %+v\n", posts)
+
+    data := struct {
+        Posts          []repository.Posts
+        MostRecentPost *repository.Posts
+        Topics         []repository.Topic
+        TimeZone       *time.Location
+        Filter         string
+        SelectedTopic  int
+    }{
+        Posts:          posts,
+        MostRecentPost: mostRecentPost,
+        Topics:         topics,
+        TimeZone:       time.UTC,
+        Filter:         filter,
+        SelectedTopic:  selectedTopic,
+    }
+
+    if err := tmpl.ExecuteTemplate(w, "index", data); err != nil {
         http.Error(w, err.Error(), http.StatusInternalServerError)
         return
     }
@@ -68,8 +85,43 @@ func (a *App) MainPage(w http.ResponseWriter, r *http.Request) {
 
 
 
-func queryData(db *sql.DB) ([]repository.Posts, error) {
-    rows, err := db.Query(repository.SQLSelectAllPosts)
+
+
+func queryData(db *sql.DB, filter string, topicID int) ([]repository.Posts, error) {
+    var query string
+    var args []interface{}
+    if topicID == -1 {
+        // If "All" is selected, fetch all posts
+        switch filter {
+        case "oldest":
+            query = repository.SQLSelectAllPosts + " ORDER BY post_date ASC"
+        case "most_likes":
+            query = repository.SQLSelectAllPosts + " ORDER BY like_count DESC"
+        case "most_dislikes":
+            query = repository.SQLSelectAllPosts + " ORDER BY dislike_count DESC"
+        case "most_recent", "":
+            query = repository.SQLSelectAllPosts + " ORDER BY post_date DESC"
+        default:
+            return nil, fmt.Errorf("invalid filter value")
+        }
+    } else {
+        // Otherwise, fetch posts for the selected topic
+        switch filter {
+        case "oldest":
+            query = repository.SQLSelectAllPosts + " WHERE COALESCE(topic_id, -1) = ? ORDER BY post_date ASC"
+        case "most_likes":
+            query = repository.SQLSelectAllPosts + " WHERE COALESCE(topic_id, -1) = ? ORDER BY like_count DESC"
+        case "most_dislikes":
+            query = repository.SQLSelectAllPosts + " WHERE COALESCE(topic_id, -1) = ? ORDER BY dislike_count DESC"
+        case "most_recent", "":
+            query = repository.SQLSelectAllPosts + " WHERE COALESCE(topic_id, -1) = ? ORDER BY post_date DESC"
+        default:
+            return nil, fmt.Errorf("invalid filter value")
+        }
+        args = append(args, topicID)
+    }
+   
+    rows, err := db.Query(query, args...)
     if err != nil {
         return nil, err
     }
@@ -96,16 +148,18 @@ func queryData(db *sql.DB) ([]repository.Posts, error) {
 
         // Обработка NULL значения для topic_id
         if post.TopicID != -1 {
-			post.Topic = getTopicName(db, post.TopicID)
-		} else {
-			post.Topic = "No Topic"
-		}
+            post.Topic = getTopicName(db, post.TopicID)
+        } else {
+            post.Topic = "No Topic"
+        }
 
         posts = append(posts, post)
     }
 
     return posts, nil
 }
+
+
 
 func getTopicName(db *sql.DB, topicID int) string {
 	var topicName string
