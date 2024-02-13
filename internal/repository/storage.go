@@ -10,20 +10,20 @@ import (
 )
 
 func InitDBConn(ctx context.Context) (db *sql.DB, err error) {
-	// Используйте путь к файлу SQLite вместо URL
+	// Use SQLite file path instead of URL
 	db, err = sql.Open("sqlite3", "./db/database.db")
 	if err != nil {
 		err = fmt.Errorf("failed to open SQLite DB connection: %w", err)
 		return
 	}
 
-	// Установка максимального количества открытых и простаивающих соединений, а также таймаутов
+	// Setting the maximum number of open and idle connections, as well as timeouts
 	db.SetMaxOpenConns(5)
 	db.SetMaxIdleConns(1)
 	db.SetConnMaxLifetime(24 * time.Hour)
 	db.SetConnMaxIdleTime(30 * time.Minute)
 
-	// Устанавливаем таймауты для подключения
+	// Setting timeouts for connections
 	conn, err := db.Conn(ctx)
 	if err != nil {
 		err = fmt.Errorf("failed to establish a new connection: %w", err)

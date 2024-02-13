@@ -1,8 +1,37 @@
 {{define "post"}}
 
-{{template "header"}}
+{{if .IsAuthorized}}
+    {{template "header"}}
+    <div class="header-right-group-buttons">
+      <a class="write-btn" href="http://localhost:8080/create/"> 
+          <span    class="material-symbols-outlined">
+          edit_square</span>Write
+      </a>
+      <div id="user">
+          <img src="/public/src/user.jpg" alt="User Photo" id="user-photo">
+          <span id="user-name">{{.NameUser}}</span>
+      </div>
+
+    
+          <a href="/logout">
+              <span id="notifications">
+                  <span class="material-symbols-outlined">
+                      logout
+                  </span>
+              </span>
+          </a>
+     
+  </div>
+
+</header>
+{{else}}
+   {{template "unreg-header"}}
+{{end}}
 
   <main class="post-page">
+    <div class="back-home"><a href="/"><span class="material-symbols-outlined">
+      arrow_back
+      </span>Back home</a></div>
 
     <div class="main-post">
             
@@ -36,12 +65,20 @@
     
     </div>
 
-    <div class="comment-add">
-      <form action="/save_comment/{{.Post.Slug}}" method="post" enctype="application/x-www-form-urlencoded">
-        <textarea name="add-text-comment" id="add-text-comment" placeholder="Write a comment..." required></textarea>
-        <button type="submit" class="publish-btn">Send</button>
-    </form>
-    </div>
+    {{if .IsAuthorized}}
+          <div class="comment-add">
+          <form action="/save_comment/{{.Post.Slug}}" method="post" enctype="application/x-www-form-urlencoded">
+            <textarea name="add-text-comment" id="add-text-comment" placeholder="Write a comment..." required></textarea>
+            {{if . }}
+            <div class="error-comment"><p>
+                {{.Message}}
+            </p></div>
+            {{end}}
+            <button type="submit" class="publish-btn">Send</button>
+          </form>
+        </div>
+    {{end}}
+
   </main>
 
   <section class="comment-list">

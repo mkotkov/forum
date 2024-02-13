@@ -8,16 +8,15 @@ import (
 )
 
 type Comments struct {
-    ID           int       `db:"id"`
-    UserID       int       `db:"user_id"`
-    PostID       int       `db:"post_id"`
-    UserName     string    `db:"user_name"`
-    Comment      string    `db:"comment"`
-    CommentDate  time.Time `db:"comment_date"`
-    LikeCount    int `db:"like_count"`
-    DislikeCount int `db:"dislike_count"`
+	ID           int       `db:"id"`
+	UserID       int       `db:"user_id"`
+	PostID       int       `db:"post_id"`
+	UserName     string    `db:"user_name"`
+	Comment      string    `db:"comment"`
+	CommentDate  time.Time `db:"comment_date"`
+	LikeCount    int       `db:"like_count"`
+	DislikeCount int       `db:"dislike_count"`
 }
-
 
 func (r *Repository) GetCommentsByPostID(ctx context.Context, postID uint16) ([]Comments, error) {
 	rows, err := r.db.QueryContext(ctx, `SELECT id, post_id, author_id, user_name, text, comment_date, like_count, dislike_count FROM comments WHERE post_id = $1 ORDER BY comment_date DESC
@@ -30,7 +29,7 @@ func (r *Repository) GetCommentsByPostID(ctx context.Context, postID uint16) ([]
 	var comments []Comments
 	for rows.Next() {
 		var comment Comments
-		if err := rows.Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.UserName, &comment.Comment, &comment.CommentDate,&comment.LikeCount,&comment.DislikeCount); err != nil {
+		if err := rows.Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.UserName, &comment.Comment, &comment.CommentDate, &comment.LikeCount, &comment.DislikeCount); err != nil {
 			return nil, fmt.Errorf("failed to scan comments: %w", err)
 		}
 		comments = append(comments, comment)

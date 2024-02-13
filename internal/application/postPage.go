@@ -5,34 +5,37 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"forum/internal/repository"
 )
 
-func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
+func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string, isAuthorized bool, message string) {
+	userID, err := repository.GetUserIDFromToken(r, a.repo)
+	if err != nil {
+	}
+
+	fmt.Println("userID:", userID)
+
+	userLogin, err := a.repo.GetUserLoginByID(r.Context(), userID)
+	if err != nil {
+	}
+
+	fmt.Println("userLogin:", userLogin)
+
 	post, err := a.repo.GetPostBySlug(a.ctx, slug)
 	if err != nil {
 		http.Error(w, "Error getting post", http.StatusInternalServerError)
 		return
 	}
 
-	// Добавим вывод для проверки
-	fmt.Printf("Post: %+v\n", post)
+	// fmt.Printf("Post: %+v\n", post)
 
-	// Проверяем, что TopicID не равен 0
 	if post.TopicID != 0 {
-		// Получаем имя темы для поста
-		post.Topic = getTopicName(a.repo.GetDB(), post.TopicID)
+		post.Topic = GetTopicName(a.repo.GetDB(), post.TopicID)
 	} else {
-		// Если TopicID равен 0, устанавливаем значение по умолчанию
 		post.Topic = "No Topic"
-	}
-
-	_, err = a.getAuthenticatedUser(r)
-	if err != nil {
-		http.Error(w, "User not authenticated", http.StatusUnauthorized)
-		return
 	}
 
 	likeCount, err := a.repo.GetPostLikes(a.ctx, int(post.Id))
@@ -56,10 +59,11 @@ func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
 		return
 	}
 
-	
-
 	tmpl, err := template.ParseFiles(
 		"public/html/header.html",
+		"public/html/unreg-header.html",
+		"public/html/login-form.html",
+		"public/html/signup.html",
 		"public/html/footer.html",
 		"public/html/comment.html",
 		"public/html/post.html",
@@ -75,18 +79,23 @@ func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
 		return
 	}
 
-	// Добавим вывод для проверки
-	fmt.Println("Post:", post)
-	fmt.Println("Comments:", comments)
+	// fmt.Println("Post:", post)
+	// fmt.Println("Comments:", comments)
 
 	data := struct {
-		Post     repository.Posts
-		Comments []repository.Comments
-		Topics   []repository.Topic
+		Post         repository.Posts
+		Comments     []repository.Comments
+		Topics       []repository.Topic
+		IsAuthorized bool
+		Message      string
+		NameUser     string
 	}{
-		Post:     post,
-		Comments: comments,
-		Topics:   topics,
+		Post:         post,
+		Comments:     comments,
+		Topics:       topics,
+		IsAuthorized: isAuthorized,
+		Message:      message,
+		NameUser:     userLogin,
 	}
 
 	err = tmpl.ExecuteTemplate(w, "post", data)
@@ -96,60 +105,79 @@ func (a *App) PostPage(w http.ResponseWriter, r *http.Request, slug string) {
 	}
 }
 
-
 func (a *App) SaveComment(w http.ResponseWriter, r *http.Request) {
-	// Извлекаем slug из URL
-	slug := strings.TrimPrefix(r.URL.Path, "/save_comment/")
+    // Извлекаем slug из URL-пути
+    slug := strings.TrimPrefix(r.URL.Path, "/save_comment/")
 
-	// Получаем данные из формы
-	err := r.ParseForm()
-	if err != nil {
-		http.Error(w, "Error parsing form data", http.StatusBadRequest)
-		return
-	}
+    // Парсим форму из запроса
+    err := r.ParseForm()
+    if err != nil {
+        http.Error(w, "Error parsing form data", http.StatusBadRequest)
+        return
+    }
 
-	// Получаем текст комментария и текущего авторизованного пользователя
-	commentText := r.FormValue("add-text-comment")
-	user, err := a.getAuthenticatedUser(r)
-	if err != nil {
-		http.Error(w, "User not authenticated", http.StatusUnauthorized)
-		return
-	}
+    // Получаем текст комментария из формы
+    commentText := strings.TrimSpace(r.Form.Get("add-text-comment"))
 
-	// Получаем пост по slug
-	post, err := a.repo.GetPostBySlug(a.ctx, slug)
-	if err != nil {
-		log.Printf("Error getting post by slug: %v", err)
-		http.Error(w, "Error getting post", http.StatusInternalServerError)
-		return
-	}
+    // Проверяем, что комментарий не пустой
+    if commentText == "" {
+        errorMes := "Comment cannot be empty!"
+        a.PostPage(w, r, slug, true, errorMes)
+        return
+    }
 
-	// Сохраняем комментарий в базе данных, используя post.ID
-	err = a.repo.SaveComment(a.ctx, int(post.Id), int(user.Id), user.Login, commentText)
-	if err != nil {
-		log.Printf("Error saving comment: %v", err)
-		http.Error(w, "Error saving comment", http.StatusInternalServerError)
-		return
-	}
+    // Получаем аутентифицированного пользователя
+    user, err := a.getAuthenticatedUser(r)
+    if err != nil {
+        http.Error(w, "User not authenticated", http.StatusUnauthorized)
+        return
+    }
 
-	// Редиректим обратно на страницу поста с использованием slug
-	http.Redirect(w, r, "/post/"+slug, http.StatusSeeOther)
+    // Получаем пост по его slug
+    post, err := a.repo.GetPostBySlug(a.ctx, slug)
+    if err != nil {
+        log.Printf("Error getting post by slug: %v", err)
+        http.Error(w, "Error getting post", http.StatusInternalServerError)
+        return
+    }
+
+    // Сохраняем комментарий в базе данных
+    err = a.repo.SaveComment(a.ctx, int(post.Id), int(user.Id), user.Login, commentText)
+    if err != nil {
+        log.Printf("Error saving comment: %v", err)
+        http.Error(w, "Error saving comment", http.StatusInternalServerError)
+        return
+    }
+
+    // Перенаправляем пользователя на страницу поста
+    http.Redirect(w, r, "/post/"+slug, http.StatusSeeOther)
 }
 
+
+
 func (a *App) getAuthenticatedUser(r *http.Request) (repository.User, error) {
-	// Получаем куки из запроса
-	cookie, err := r.Cookie("token")
+	// Получение идентификатора пользователя из сессии
+	userID, err := repository.GetUserIDFromSessionID(r, a.repo)
 	if err != nil {
-		return repository.User{}, fmt.Errorf("no authentication token found")
+		fmt.Println("Error getting user ID from session ID:", err)
+		return repository.User{}, fmt.Errorf("user not authenticated")
 	}
 
-	// Получаем пользователя из кэша по токену
-	user, ok := a.cache[cookie.Value]
-	if !ok {
-		return repository.User{}, fmt.Errorf("user not authenticated")
+	userIDStr := strconv.Itoa(userID)
+
+	// Получение пользователя из репозитория по идентификатору
+	user, err := a.repo.GetUserBySessionID(r.Context(), userIDStr)
+	if err != nil {
+		fmt.Println("Error getting user by session ID:", err)
+		return repository.User{}, fmt.Errorf("user not found")
 	}
 
 	return user, nil
 }
+
+
+
+
+
 
 

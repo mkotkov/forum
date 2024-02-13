@@ -1,5 +1,35 @@
 {{define "index"}}
-{{template "header"}}
+
+{{if .IsAuthorized}}
+    {{template "header"}}
+    <div class="header-right-group-buttons">
+        <a class="write-btn" href="http://localhost:8080/create/"> 
+            <span    class="material-symbols-outlined">
+            edit_square</span>Write
+        </a>
+        <div id="user">
+            <img src="/public/src/user.jpg" alt="User Photo" id="user-photo">
+            <span id="user-name">{{.NameUser}}</span>
+        </div>
+
+      
+            <a href="/logout">
+                <span id="notifications">
+                    <span class="material-symbols-outlined">
+                        logout
+                    </span>
+                </span>
+            </a>
+       
+    </div>
+
+  </header>
+{{else}}
+   {{template "unreg-header"}}
+   {{if . }}
+        {{.Message}}
+   {{end}}
+{{end}}
 
   <main>
       
@@ -31,7 +61,7 @@
     <aside>
        
         <div class="rec-top">
-            <h3>Recommended topics</h3>
+            <h3>Topics</h3>
             <div class="items">
               <form action="/" method="get">
                 <button class="topic" name="topic" value="0" {{if eq .SelectedTopic 0}}selected{{end}}>All</button> 

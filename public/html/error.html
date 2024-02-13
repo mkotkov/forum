@@ -1,0 +1,133 @@
+{{define "error"}}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kodum</title>
+  <link rel="icon" type="image" href="/public/data_array_white_24dp.svg" />
+  <link rel="stylesheet" href="/public/css/style.css">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+</head>
+<body>
+    <header>
+   
+        <a href="/" id="logo">Kodum</a>
+        <a class="get-started-btn" href="/"> 
+            <span id="login-btn">Back home</span>
+        </a>
+    </header>
+    
+    <div class="content-error">
+
+        {{if eq .Status 404}}
+        
+        <div class="code"><p>4</p>
+<pre>   
+         _nnnn_
+        dGGGGMMb
+       @p~qp~~qMb
+       M|@||@) M|
+       @,----.JM|
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMP|   .'
+     `-'       `--'
+</pre>
+        <p>4</p>
+    </div>
+            <p>Ops.. page not found</p>
+            
+        {{else if eq .Status 400}}
+        <div class="code">
+        <p>4</p>
+<pre>   
+         _nnnn_
+        dGGGGMMb
+       @p~qp~~qMb
+       M|@||@) M|
+       @,----.JM|
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMP|   .'
+     `-'       `--'
+</pre>
+<p>4</p>
+    </div>
+             <p>Ops.. Bad Request</p>
+        {{else if eq .Status 500}}
+        <div class="code">
+            <p>5</p>
+    <pre>
+         _nnnn_
+        dGGGGMMb
+       @p~qp~~qMb
+       M|@||@) M|
+       @,----.JM|
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMP|   .'
+     `-'       `--'
+    </pre>
+    <p>0</p>
+        </div>
+             <p>Ops.. Internal Server Error</p>
+        {{else}}
+        <div class="code">
+            <p>?</p>
+    <pre>
+         _nnnn_
+        dGGGGMMb
+       @p~qp~~qMb
+       M|@||@) M|
+       @,----.JM|
+      JS^\__/  qKL
+     dZP        qKRb
+    dZP          qKKb
+   fZP            SMMb
+   HZM            MMMM
+   FqM            MMMM
+ __| ".        |\dS"qML
+ |    `.       | `' \Zq
+_)      \.___.,|     .'
+\____   )MMMMMP|   .'
+     `-'       `--'
+    </pre>
+    <p>?</p>
+        </div>
+            <p>Unknown Error...</p>
+        {{end}}
+
+   
+        
+    </div>
+
+    
+</main>
+
+
+{{template "footer"}}
+
+{{end}}

@@ -26,8 +26,10 @@ func main() {
 	a := application.NewApp(ctx, db)
 	router := &RouterAdapter{a}
 
-	// Обработка всех запросов через RouterAdapter
 	http.Handle("/", router)
+
+	// static file handler
+	http.Handle("/public/", http.StripPrefix("/public/", http.FileServer(http.Dir("./public"))))
 
 	srv := &http.Server{Addr: "0.0.0.0:8080", Handler: nil}
 
@@ -38,14 +40,12 @@ func main() {
 		}
 	}()
 
-	// Слушаем сигналы для корректного завершения работы сервера
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 	<-stop
 
 	fmt.Println("Shutting down the server...")
 
-	// Остановка сервера с таймаутом 5 секунд
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
@@ -56,12 +56,12 @@ func main() {
 	fmt.Println("Server stopped gracefully")
 }
 
-// RouterAdapter адаптер для преобразования *application.App в http.Handler интерфейс
+// RouterAdapter adapter for converting *application.App to http.Handler interface
 type RouterAdapter struct {
 	app *application.App
 }
 
-// ServeHTTP реализует метод интерфейса http.Handler для RouterAdapter
+// ServeHTTP implements the http.Handler interface method for RouterAdapter
 func (ra *RouterAdapter) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	ra.app.Routes(w, r)
 }

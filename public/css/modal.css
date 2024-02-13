@@ -13,13 +13,13 @@
     animation: scale 0.5s ease;
   }
   .modal-target-signup .cmt{
-    height: 48rem;
+    height: 42rem;
   }
   
   #loginForm h3, #signUpForm h3{
     font-size: 2.3rem;
     font-weight: 500;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
   }
   
   .modal-close {
@@ -113,4 +113,8 @@
     height: 100%;
     animation: bg 0.5s ease;
     background: rgba(74, 7, 129, 0.692);
+  }
+
+  .modal-target-signup a.get-started-btn,.modal-target-login a.get-started-btn {
+    color: var(--primary);
   }

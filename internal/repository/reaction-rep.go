@@ -17,15 +17,15 @@ func (r *Repository) DeleteReaction(ctx context.Context, postID, userID int) err
 	return nil
 }
 
-// Метод для реакции пользователя на пост (лайк/дизлайк)
+// Method for user reaction to a post (like/dislike)
 func (r *Repository) ReactPost(ctx context.Context, postID, userID int, reactionType string) error {
-	// Удаление предыдущей реакции пользователя
+	// Deleting a previous user reaction
 	err := r.DeleteReaction(ctx, postID, userID)
 	if err != nil {
 		return fmt.Errorf("failed to delete previous reaction: %w", err)
 	}
 
-	// Вставка новой реакции пользователя
+	// Inserting a new user reaction
 	_, err = r.db.ExecContext(ctx, `
         INSERT INTO reaction (user_id, post_id, reaction_type)
         VALUES ($1, $2, $3)
@@ -34,7 +34,7 @@ func (r *Repository) ReactPost(ctx context.Context, postID, userID int, reaction
 		return fmt.Errorf("failed to react to post: %w", err)
 	}
 
-	// Обновление счетчика лайков/дизлайков для поста
+	// Updating the likes/dislikes counter for a post
 	var updateColumn string
 	if reactionType == "like" {
 		updateColumn = "like_count"
@@ -50,9 +50,9 @@ func (r *Repository) ReactPost(ctx context.Context, postID, userID int, reaction
 	return nil
 }
 
-// UpdatePostReactionsCount обновляет счетчик лайков и дизлайков для поста
+// UpdatePostReactionsCount updates the likes and dislikes counter for a post
 func (r *Repository) UpdatePostReactionsCount(ctx context.Context, postID int) error {
-	// Обновление счетчика лайков для поста
+	// Updating the like counter for a post
 	_, err := r.db.ExecContext(ctx, `
         UPDATE posts
         SET like_count = (SELECT COUNT(*) FROM reaction WHERE post_id = $1 AND reaction_type = 'like'),
@@ -85,7 +85,7 @@ func (r *Repository) LikePost(ctx context.Context, postID, userID int) error {
 	return nil
 }
 
-// DislikePost увеличивает счетчик дизлайков для поста с заданным ID
+// DislikePost increases the dislike counter for a post with a given ID
 func (r *Repository) DislikePost(ctx context.Context, postID, userID int) error {
 	_, err := r.db.ExecContext(ctx, `
         INSERT INTO reaction (user_id, post_id, reaction_type)
@@ -104,7 +104,7 @@ func (r *Repository) DislikePost(ctx context.Context, postID, userID int) error 
 	return nil
 }
 
-// GetPostLikes получает количество лайков для поста
+// GetPostLikes gets the number of likes for a post
 func (r *Repository) GetPostLikes(ctx context.Context, postID int) (int, error) {
 	var likeCount int
 	err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM reaction WHERE post_id = $1 AND reaction_type = 'like'", postID).Scan(&likeCount)
@@ -114,7 +114,7 @@ func (r *Repository) GetPostLikes(ctx context.Context, postID int) (int, error) 
 	return likeCount, nil
 }
 
-// GetPostDislikes получает количество дизлайков для поста
+// GetPostDislikes gets the number of dislikes for a post
 func (r *Repository) GetPostDislikes(ctx context.Context, postID int) (int, error) {
 	var dislikeCount int
 	err := r.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM reaction WHERE post_id = $1 AND reaction_type = 'dislike'", postID).Scan(&dislikeCount)
@@ -124,59 +124,57 @@ func (r *Repository) GetPostDislikes(ctx context.Context, postID int) (int, erro
 	return dislikeCount, nil
 }
 
-
-
 func (r *Repository) LikeComment(ctx context.Context, commentID, userID int) error {
-    _, err := r.db.ExecContext(ctx, `
+	_, err := r.db.ExecContext(ctx, `
         INSERT INTO reaction (user_id, comment_id, reaction_type)
         VALUES ($1, $2, 'like')
         ON CONFLICT (user_id, comment_id, reaction_type) DO UPDATE SET reaction_type = 'like', created_at = CURRENT_TIMESTAMP
     `, userID, commentID)
-    if err != nil {
-        return fmt.Errorf("failed to dislike comment: %w", err)
-    }
-    
-    // Обновление счетчика дизлайков для комментария
-    err = r.UpdateCommentReactionsCount(ctx, commentID)
-    if err != nil {
-        return fmt.Errorf("failed to update comment reactions count: %w", err)
-    }
-    
-    return nil
+	if err != nil {
+		return fmt.Errorf("failed to like comment: %w", err)
+	}
+
+	// Updating the like counter for a comment
+	err = r.UpdateCommentReactionsCount(ctx, commentID)
+	if err != nil {
+		return fmt.Errorf("failed to update comment reactions count: %w", err)
+	}
+
+	return nil
 }
 
-
 func (r *Repository) DislikeComment(ctx context.Context, commentID, userID int) error {
-    _, err := r.db.ExecContext(ctx, `
+	_, err := r.db.ExecContext(ctx, `
         INSERT INTO reaction (user_id, comment_id, reaction_type)
         VALUES ($1, $2, 'dislike')
         ON CONFLICT (user_id, comment_id, reaction_type) DO UPDATE SET reaction_type = 'dislike', created_at = CURRENT_TIMESTAMP
     `, userID, commentID)
-    if err != nil {
-        return fmt.Errorf("failed to dislike comment: %w", err)
-    }
-    
-    // Обновление счетчика дизлайков для комментария
-    err = r.UpdateCommentReactionsCount(ctx, commentID)
-    if err != nil {
-        return fmt.Errorf("failed to update comment reactions count: %w", err)
-    }
-    
-    return nil
+	if err != nil {
+		return fmt.Errorf("failed to dislike comment: %w", err)
+	}
+
+	// Updating the dislike counter for a comment
+	err = r.UpdateCommentReactionsCount(ctx, commentID)
+	if err != nil {
+		return fmt.Errorf("failed to update comment reactions count: %w", err)
+	}
+
+	return nil
 }
 
+
 func (r *Repository) UpdateCommentReactionsCount(ctx context.Context, commentID int) error {
-    _, err := r.db.ExecContext(ctx, `
+	_, err := r.db.ExecContext(ctx, `
         UPDATE comments
         SET like_count = (SELECT COUNT(*) FROM reaction WHERE comment_id = $1 AND reaction_type = 'like'),
             dislike_count = (SELECT COUNT(*) FROM reaction WHERE comment_id = $1 AND reaction_type = 'dislike')
         WHERE id = $1
     `, commentID)
-    if err != nil {
-        return fmt.Errorf("failed to update comment reactions count: %w", err)
-    }
+	if err != nil {
+		return fmt.Errorf("failed to update comment reactions count: %w", err)
+	}
 
-    return nil
+	return nil
 }
 
 func (r *Repository) DeleteReactionComment(ctx context.Context, commentID, userID int) error {

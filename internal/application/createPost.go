@@ -10,77 +10,112 @@ import (
 	"forum/internal/repository"
 )
 
-func (a *App) Create(w http.ResponseWriter, r *http.Request) {
-    // Fetch all topics for the "create" page
-    topics, err := a.repo.GetAllTopics(r.Context())
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+func (a *App) Create(w http.ResponseWriter, r *http.Request, message string) {
+	userID, err := repository.GetUserIDFromToken(r, a.repo)
+	if err != nil {
+		a.UnregPage(w, r, "", false)
+		return
+	}
+	fmt.Println("userID:", userID)
 
-    // Include topics in the data for rendering the "create" template
-    data := struct {
-        Topics []repository.Topic
-    }{
-        Topics: topics,
-    }
+	userLogin, err := a.repo.GetUserLoginByID(r.Context(), userID)
+	if err != nil {
+		a.UnregPage(w, r, "", false)
+		return
+	}
 
-    tmpl, err := template.ParseFiles(
-        "public/html/create.html",
-        "public/html/header.html",
-        "public/html/footer.html",
-    )
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
+	// Fetch all topics for the "create" page
+	topics, err := a.repo.GetAllTopics(r.Context())
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
-    err = tmpl.ExecuteTemplate(w, "create", data)
-    if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-    }
+	// Include topics in the data for rendering the "create" template
+	data := struct {
+		Topics   []repository.Topic
+		Message  string
+		NameUser string
+	}{
+		Topics:   topics,
+		Message:  message,
+		NameUser: userLogin,
+	}
+
+	tmpl, err := template.ParseFiles(
+		"public/html/create.html",
+		"public/html/header.html",
+		"public/html/footer.html",
+	)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	err = tmpl.ExecuteTemplate(w, "create", data)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
-
 func (a *App) SavePost(w http.ResponseWriter, r *http.Request) {
-	// Ensure the user is authenticated
-	token, err := readCookie("token", r)
-	if err != nil || a.cache[token] == (repository.User{}) {
+	sessionID, err := readCookie("session_id", r)
+	if err != nil {
+		fmt.Println("Error reading session ID cookie:", err)
 		http.Redirect(w, r, "/login", http.StatusSeeOther)
 		return
 	}
 
+	userID, err := repository.GetUserIDFromSessionID(r, a.repo)
+	if err != nil {
+		fmt.Println("Error getting user ID from session ID:", err)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	err = r.ParseForm()
+	if err != nil {
+		http.Error(w, "Error parsing form data", http.StatusBadRequest)
+		return
+	}
+
 	// Retrieve the authenticated user
-	authorizedUser := a.cache[token]
+	userLogin, err := a.repo.GetUserLoginByID(r.Context(), userID)
+	if err != nil {
+		fmt.Println("Error getting user login:", err)
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
 
-    title := r.FormValue("title")
-    fullText := r.FormValue("full-text")
-    topicID := r.FormValue("topic")
+	title := strings.TrimSpace(r.Form.Get("title"))
+	fullText := strings.TrimSpace(r.Form.Get("full-text"))
+	topicID := r.FormValue("topic")
 
-    if title == "" || fullText == "" || topicID == "" {
-        http.Error(w, "Title, Full Text, and Topic cannot be empty", http.StatusBadRequest)
-        return
-    }
+	if title == "" || fullText == "" || topicID == "" {
+		a.Create(w, r, "<div class="+"error"+"><p>Title, Full Text, and Topic cannot be empty!</p></div>")
+		return
+	}
 
-    slug := generateSlug(title) + topicID + token
+	slug := generateSlug(title) + topicID + sessionID
 
-    // Insert the post data into the database using the authorized user's information and the selected topic
-    err = a.InsertData(title, fullText, authorizedUser.Login, slug, topicID)
-    if err != nil {
-        fmt.Printf("Error inserting data: %v\n", err)
-        http.Error(w, "Error inserting data", http.StatusInternalServerError)
-        return
-    }
+	// Insert the post data into the database using the authorized user's information and the selected topic
+	err = a.InsertData(title, fullText, userLogin, slug, topicID)
+	if err != nil {
+		fmt.Printf("Error inserting data: %v\n", err)
+		http.Error(w, "Error inserting data", http.StatusInternalServerError)
+		return
+	}
 
-    http.Redirect(w, r, fmt.Sprintf("/post/%s", slug), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/post/%s", slug), http.StatusSeeOther)
 }
 
 func (a *App) InsertData(title, fullText, authorName, slug, topicID string) error {
 	// Retrieve the user information based on the author's name
 	user, err := a.repo.GetUserByName(a.ctx, authorName)
-    if err != nil {
-        return fmt.Errorf("failed to retrieve user: %w", err)
-    }
+	if err != nil {
+		return fmt.Errorf("failed to retrieve user: %w", err)
+	}
 
 	tx, err := a.db.Begin()
 	if err != nil {
@@ -102,18 +137,18 @@ func (a *App) InsertData(title, fullText, authorName, slug, topicID string) erro
 	}()
 
 	stmt, err := tx.Prepare("INSERT INTO posts (title, full_text, author, post_date, slug, topic_id) VALUES (?, ?, ?, CURRENT_TIMESTAMP, ?, ?)")
-    if err != nil {
-        return fmt.Errorf("failed to prepare statement: %w", err)
-    }
-    defer stmt.Close()
+	if err != nil {
+		return fmt.Errorf("failed to prepare statement: %w", err)
+	}
+	defer stmt.Close()
 
-    _, err = stmt.Exec(title, fullText, user.Login, slug, topicID)
-    if err != nil {
-        return fmt.Errorf("failed to execute statement: %w", err)
-    }
+	_, err = stmt.Exec(title, fullText, user.Login, slug, topicID)
+	if err != nil {
+		return fmt.Errorf("failed to execute statement: %w", err)
+	}
 
-    fmt.Println("Insertion successful")
-    return nil
+	fmt.Println("Insertion successful")
+	return nil
 }
 
 func generateSlug(s string) string {

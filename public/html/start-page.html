@@ -1,4 +1,5 @@
 {{define "start-page"}}
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -36,6 +37,11 @@
 
 {{template "login-form"}}
 {{template "signup"}}
+        {{if . }}
+        <div class="error">
+            {{.Message}}
+        </div>
+        {{end}}
  <main class="start-page">
         <span>
           <h1>Explore</h1>

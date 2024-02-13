@@ -4,61 +4,57 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"html/template"
 	"net/http"
+	"regexp"
 	"strings"
 )
 
-func (a *App) SignupPage(w http.ResponseWriter, message string) {
-	tmpl, err := template.ParseFiles(
-		"public/html/header.html",
-		"public/html/footer.html",
-		"public/html/forum-card.html",
-		"public/html/start-page.html",
-		"public/html/login-form.html",
-		"public/html/signup.html")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	type answer struct {
-		Message string
-	}
-	data := answer{message}
-
-	err = tmpl.ExecuteTemplate(w, "start-page", data)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-}
-
 func (a *App) Signup(w http.ResponseWriter, r *http.Request) {
-	name := strings.TrimSpace(r.FormValue("name"))
-	surname := strings.TrimSpace(r.FormValue("surname"))
 	login := strings.TrimSpace(r.FormValue("login"))
 	password := strings.TrimSpace(r.FormValue("password"))
 	password2 := strings.TrimSpace(r.FormValue("password2"))
+	email := strings.TrimSpace(r.FormValue("email"))
 
-	if name == "" || surname == "" || login == "" || password == "" {
-		a.SignupPage(w, "Все поля должны быть заполнены!")
+	if login == "" || password == "" || email == "" {
+		a.UnregPage(w, r, "<div class="+"error"+"><p>All fields must be filled in!</p></div>", false)
 		return
 	}
 
 	if password != password2 {
-		a.SignupPage(w, "Пароли не совпадают! Попробуйте еще")
+		a.UnregPage(w, r, "<div class="+"error"+"><p>Passwords do not match! Please try again.</p></div>", false)
+		return
+	}
+
+	// Check if the user already exists
+	exists, err := a.repo.UserExists(a.ctx, login, email)
+	if err != nil {
+		a.UnregPage(w, r, fmt.Sprintf("<div class="+"error"+"><p>Error checking user existence: %v</p></div>", err), false)
+		return
+	}
+
+	if exists {
+		a.UnregPage(w, r, "<div class="+"error"+"><p>User with this login or email already exists. Please log in or use different credentials.</p></div>", false)
+		return
+	}
+
+	if !isValidEmail(email) {
+		a.UnregPage(w, r, "<div class="+"error"+"><p>Invalid email format. Please enter a valid email address.</p></div>", false)
 		return
 	}
 
 	hash := md5.Sum([]byte(password))
 	hashedPass := hex.EncodeToString(hash[:])
 
-	err := a.repo.AddNewUser(a.ctx, name, surname, login, hashedPass)
+	err = a.repo.AddNewUser(a.ctx, login, email, hashedPass)
 	if err != nil {
-		a.SignupPage(w, fmt.Sprintf("Ошибка создания пользователя: %v", err))
+		a.UnregPage(w, r, fmt.Sprintf("<div class="+"error"+"><p>Error creating user: %v</p></div>", err), false)
 		return
 	}
 
-	a.LoginPage(w, fmt.Sprintf("%s, вы успешно зарегистрированы! Теперь вам доступен вход через страницу авторизации", name))
+	a.UnregPage(w, r, fmt.Sprintf("<div class="+"error"+"><p>%s, you have successfully registered! Now you can log in.</p></div>", login), false)
+}
+
+func isValidEmail(email string) bool {
+	emailRegex := regexp.MustCompile(`^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$`)
+	return emailRegex.MatchString(email)
 }

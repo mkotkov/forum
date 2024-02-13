@@ -1,38 +1,25 @@
 {{define "signup"}}
-
 <div class="modal-target-signup" id="modal-target-signup">
     <div class="cmt">
-    
-    <form id="signUpForm" name="signUpForm" action="/signup" method="post" >
-        
-        <h3>Create an account</h3>
+        <form id="signUpForm" name="signUpForm" action="/signup" method="post">
+            <h3>Create an account</h3>
 
-        <label for="name">Name</label><br>
-        <input type="text" id="name" name="name" required><br>
+            <label for="login">Login</label><br>
+            <input type="text" id="login" name="login" required><br>
 
-        <label for="surname">Surname</label><br>
-        <input type="text" id="surname" name="surname" required><br>
+            <label for="email">Email</label><br>
+            <input type="email" id="email" name="email" required><br>
 
-        <label for="login">Login</label><br>
-        <input type="login" id="login" name="login" required><br>
+            <label for="password">Password</label><br>
+            <input type="password" id="password" name="password" required><br>
 
-        <label for="password">Password</label><br>
-        <input type="password" id="password" name="password" required><br>
-
-        <label for="password2">Requst password</label><br>
-        <input type="password" id="password2" name="password2" required><br>
-        <br>
-        <button type="submit" name="submit-btn">Sign up</button>
-            <p>Do you have an account?<a class="get-started-btn" href="#modal-target-login" id="login-form-btn"></span>Login in</a>
-    </form>
-
-    {{if . }}
-    <div>
-        {{.Message}}
+            <label for="password2">Requst password</label><br>
+            <input type="password" id="password2" name="password2" required><br>
+            <br>
+            <button type="submit" name="submit-btn">Sign up</button>
+            <p>Do you have an account?<a class="get-started-btn" href="#modal-target-login" id="login-form-btn">Login in</a>
+        </form>
     </div>
-    {{end}}
-    </div>
-    <a href="#close" class="modal-close"></a>    
+    <a href="#close" class="modal-close"></a>
 </div>
-
 {{end}}

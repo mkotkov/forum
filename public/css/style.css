@@ -262,8 +262,8 @@ main.start-page span{
   align-items: center;
   justify-content: center;
   border-radius: 1.8rem;
-  background-color:white;
-  color: var(--primary);
+  background-color: var(--primary);
+  color: white;
   font-family: Roboto;
   font-size: 1rem;
   font-weight: 500;
@@ -272,7 +272,7 @@ main.start-page span{
 }
 
 .sign-in-btn{
-  color: white;
+  color: var(--primary);
   display: flex;
   width: 6.5rem;
   align-items: center;
@@ -339,4 +339,73 @@ main.post-page{
   margin-top: 2rem;
   margin-bottom: 2rem;
   border-bottom: 1px solid var(--conteiner);
+}
+
+
+/* ERROR */
+
+div.error{
+  display: flex;
+  width: 100%;
+  height: 2rem;
+  color: white;
+  background-color: var(--black);
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  opacity: 1;
+  animation: hideElement 5s linear forwards; 
+  border: none;
+}
+
+@keyframes hideElement {
+  to {
+    opacity: 0;
+  }
+}
+
+#filters, #topic{
+  margin-bottom: 1.5rem;
+}
+
+.back-home a{
+  width: 8rem;
+  display: flex;
+  align-items: center;
+  color: var(--black);
+  margin-bottom: 2rem;
+}
+
+
+.content-error pre{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2rem;
+  font-size: 1.5rem;
+}
+
+.content-error p{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  margin-top: 2rem;
+  font-size: 5rem;
+}
+
+.content-error .code{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+
+.content-error .code p{
+  font-size: 20rem;
+}
+
+div.error-comment{
+  padding-top: 1rem;
+  color: red;
 }
